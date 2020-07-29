@@ -1,21 +1,47 @@
-import { StatusBar } from 'expo-status-bar';
-import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import React from "react";
+import PropTypes from "prop-types";
+import Loading from "./Loading";
+import axios from "axios";
+import Movie from "./Movie";
+import { View, Image, Text, StyleSheet } from "react-native";
 
-export default function App() {
-  return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
-  );
+export default class extends React.Component {
+  state = {
+    isLoading: true,
+    movies: [],
+  };
+
+  getMovies = async () => {
+    const {
+      data: {
+        data: { movies },
+      },
+    } = await axios.get(
+      "https://yts-proxy.now.sh/list_movies.json?sort_by=rating"
+    );
+    this.setState({ movies, isLoading: false });
+  };
+
+  componentDidMount() {
+    this.getMovies();
+  }
+
+  render() {
+    const { isLoading, movies } = this.state;
+    return isLoading ? (
+      <Loading />
+    ) : (
+      movies.map((movie) => (
+        <Movie
+          key={movie.id}
+          id={movie.id}
+          year={movie.year}
+          title={movie.title}
+          summary={movie.summary}
+          poster={movie.small_cover_image}
+          genres={movie.genres}
+        />
+      ))
+    );
+  }
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
